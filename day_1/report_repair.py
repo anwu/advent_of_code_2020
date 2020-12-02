@@ -9,7 +9,7 @@ def parse_arguments():
 
 
 def _normalize_inputs(inputs):
-    inputs = [int(input) for input in inputs]
+    inputs = [int(line) for line in inputs]
     return inputs
 
 
