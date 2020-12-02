@@ -67,14 +67,14 @@ def main():
     ####################
     entries = get_entries_of_sum(inputs, 2, 2020)
     product = get_product_of_entries(entries)
-    print("Entries: {}\nProduct: {}\n".format(entries, product))
+    print("[Part 1]\nEntries: {}\nProduct: {}\n".format(entries, product))
 
     ####################
     #      Part 2      #
     ####################
     entries = get_entries_of_sum(inputs, 3, 2020)
     product = get_product_of_entries(entries)
-    print("Entries: {}\nProduct: {}\n".format(entries, product))
+    print("[Part 2]\nEntries: {}\nProduct: {}".format(entries, product))
 
 
 if __name__ == "__main__":
