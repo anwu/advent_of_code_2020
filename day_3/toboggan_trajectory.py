@@ -30,14 +30,45 @@ def get_inputs(input_file):
     return inputs
 
 
+def traverse_slope(map, col_inc=3, row_inc=1):
+    """Traverse the 2d array in increasing order by given increments"""
+    row = col = encountered_trees = 0
+    right_bound = len(map[0])
+    bottom_bound = len(map)
+
+    while row < bottom_bound:
+        if map[row][col] == '#':
+            encountered_trees += 1
+        row += row_inc
+        col += col_inc
+        col %= right_bound
+
+    return encountered_trees
+
+
 def main():
     """Main function"""
     args = parse_arguments()
     
-    inputs = get_inputs(args.input_file)
+    map = get_inputs(args.input_file)
 
-    # TODO: Add solution here
+    ####################
+    #      Part 1      #
+    ####################
+    trees_encountered = traverse_slope(map)
+    print("[Part 1]\nTrees Encountered: {}\n".format(trees_encountered))
     
+    ####################
+    #      Part 2      #
+    ####################
+    product = 1
+    product *= traverse_slope(map, col_inc=1, row_inc=1)
+    product *= traverse_slope(map, col_inc=3, row_inc=1)
+    product *= traverse_slope(map, col_inc=5, row_inc=1)
+    product *= traverse_slope(map, col_inc=7, row_inc=1)
+    product *= traverse_slope(map, col_inc=1, row_inc=2)
+    print("[Part 2]\nProduct of Encountered Trees: {}".format(product))
+
 
 if __name__ == "__main__":
     main()
