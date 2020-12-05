@@ -3,7 +3,7 @@ import argparse
 def parse_arguments():
     """Parses command line arguments"""
     parser = argparse.ArgumentParser(description='Loading inputs from a text file.')
-    parser.add_argument('--input_file', '-i', help='Path to text input file.')
+    parser.add_argument('--input_file', '-i', help='Path to text input file.', default='input.txt')
 
     return parser.parse_args()
 
