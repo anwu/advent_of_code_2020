@@ -33,7 +33,6 @@ def execute_instruction(line_count, instruction):
     """Returns the next instruction line number and value to increment accumulator"""
     next_instruction = line_count
     accumulator = 0
-    # print(instruction)
 
     if instruction[0] == 'acc':
         accumulator += instruction[1]
