@@ -30,123 +30,52 @@ def get_inputs(input_file):
     return inputs
 
 
-def get_adjacents(seat_map, row, col):
-    """Get the adjacent seats around the current seat"""
-    adjacents = []
-
-    if row - 1 >= 0:
-        adjacents.append(seat_map[row-1][col]) # add top
-        if col - 1 >= 0:
-            adjacents.append(seat_map[row-1][col-1]) # add top left
-        if col + 1 < len(seat_map[row]):
-            adjacents.append(seat_map[row-1][col+1]) # add top right
-    if row + 1 < len(seat_map):
-        adjacents.append(seat_map[row+1][col]) # add bot
-        if col - 1 >= 0:
-            adjacents.append(seat_map[row+1][col-1]) # add bot left
-        if col + 1 < len(seat_map[row]):
-            adjacents.append(seat_map[row+1][col+1]) # add bot right
-    if col - 1 >= 0:
-        adjacents.append(seat_map[row][col-1]) # add left
-    if col + 1 < len(seat_map[row]):
-        adjacents.append(seat_map[row][col+1]) # add right
-
-    return adjacents
+def _within_bounds(row_min, row_max, col_min, col_max, row, col):
+    if row >= row_min and row < row_max and col >= col_min and col < col_max:
+        return True
+    return False 
 
 
-def get_visibles(seat_map, row, col):
-    """Get the first seat in each direction from the current seat"""
-    visibles = []
+def get_neighbors(seat_map, row, col, single_depth=False):
+    """Get the neighboring seat in each direction from the current seat"""
+    neighbors = []
+    direction_ops = {'top_left': (-1, -1), 'top': (-1, 0), 'top_right': (-1, 1),
+                     'bot_left': (1, -1), 'bot': (1, 0), 'bot_right': (1, 1),
+                     'left': (0, -1), 'right': (0, 1)}
 
-    for i in range(row-1, -1, -1): # add first top not floor
-        if seat_map[i][col] != '.':
-            visibles.append(seat_map[i][col])
-            break
-    
-    i = row - 1
-    j = col - 1
-    while i >= 0 and j >= 0 : # add first top left not floor
-        if seat_map[i][j] != '.':
-            visibles.append(seat_map[i][j])
-            break
-        i -= 1
-        j -= 1
+    row_min = col_min = 0
+    row_max = len(seat_map)
+    col_max = len(seat_map[0])
 
-    i = row - 1
-    j = col + 1
-    while i >= 0 and j < len(seat_map[0]): # add first top right not floor
-        if seat_map[i][j] != '.':
-            visibles.append(seat_map[i][j])
-            break
-        i -= 1
-        j += 1
+    for _, ops in direction_ops.items():
+        i = row + ops[0]
+        j = col + ops[1]
+        while _within_bounds(row_min, row_max, col_min, col_max, i, j):
+            if seat_map[i][j] != '.':
+                neighbors.append(seat_map[i][j])
+                break
+            i += ops[0]
+            j += ops[1]
+            if single_depth:
+                break
 
-    for i in range(row+1, len(seat_map)): # add first bot not floor
-        if seat_map[i][col] != '.':
-            visibles.append(seat_map[i][col])
-            break
-    
-    i = row + 1
-    j = col - 1
-    while i < len(seat_map) and j >= 0 : # add first bot left not floor
-        if seat_map[i][j] != '.':
-            visibles.append(seat_map[i][j])
-            break
-        i += 1
-        j -= 1
-
-    i = row + 1
-    j = col + 1
-    while i < len(seat_map) and j < len(seat_map[0]): # add first bot right not floor
-        if seat_map[i][j] != '.':
-            visibles.append(seat_map[i][j])
-            break
-        i += 1
-        j += 1
-
-    for i in range(col-1, -1, -1): # add first left not floor
-        if seat_map[row][i] != '.':
-            visibles.append(seat_map[row][i])
-            break
-
-    for i in range(col+1, len(seat_map[0])): # add first right not floor
-        if seat_map[row][i] != '.':
-            visibles.append(seat_map[row][i])
-            break
-
-    return visibles
+    return neighbors
     
 
-def p1_activate_seat_rule(seat_map):
-    """Applies an iteration of the rules for part 1"""
+def activate_seat_rule(seat_map, part=1):
+    """Applies an iteration of the rules"""
     seat_map_copy = copy.deepcopy(seat_map)
     seat_change = False
+    crowd_limit = 4 if part == 1 else 5
+    single_depth = True if part == 1 else False
 
     for row in range(len(seat_map)):
         for col in range(len(seat_map[row])):
-            adjacents = get_adjacents(seat_map_copy, row, col)
-            if seat_map_copy[row][col] == 'L' and adjacents.count('#') == 0:
+            neighbor_seats = get_neighbors(seat_map_copy, row, col, single_depth=single_depth)
+            if seat_map_copy[row][col] == 'L' and neighbor_seats.count('#') == 0:
                 seat_map[row][col] = '#'
                 seat_change = True
-            elif seat_map_copy[row][col] == '#' and adjacents.count('#') >= 4:
-                seat_map[row][col] = 'L'
-                seat_change = True
-
-    return seat_change
-
-
-def p2_activate_seat_rule(seat_map):
-    """Applies an iteration of the rules for part 2"""
-    seat_map_copy = copy.deepcopy(seat_map)
-    seat_change = False
-
-    for row in range(len(seat_map)):
-        for col in range(len(seat_map[row])):
-            visible_seats = get_visibles(seat_map_copy, row, col)
-            if seat_map_copy[row][col] == 'L' and visible_seats.count('#') == 0:
-                seat_map[row][col] = '#'
-                seat_change = True
-            elif seat_map_copy[row][col] == '#' and visible_seats.count('#') >= 5:
+            elif seat_map_copy[row][col] == '#' and neighbor_seats.count('#') >= crowd_limit:
                 seat_map[row][col] = 'L'
                 seat_change = True
 
@@ -162,6 +91,7 @@ def count_occupied_seats(seat_map):
 
     return num_occupied
 
+
 def get_final_num_occupied_seats(seat_map, part=1):
     """Returns the final number of occupied seats after people calm the F down"""
     seat_map_copy = copy.deepcopy(seat_map)
@@ -170,10 +100,9 @@ def get_final_num_occupied_seats(seat_map, part=1):
     i = 1
     while seat_change:
         if part == 1:
-            seat_change = p1_activate_seat_rule(seat_map_copy)
+            seat_change = activate_seat_rule(seat_map_copy, part=part)
         elif part == 2:
-            seat_change = p2_activate_seat_rule(seat_map_copy)
-
+            seat_change = activate_seat_rule(seat_map_copy, part=part)
         i += 1
 
     num_occupied = count_occupied_seats(seat_map_copy)
